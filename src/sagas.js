@@ -1,7 +1,6 @@
 import {
   call,
   put,
-  takeEvery,
   takeLatest,
   delay,
   fork,
@@ -28,10 +27,14 @@ function* getPostSaga(action) {
   }
 }
 
-function* cancelSaga(task) {
-  if (task) {
-    yield cancel(task);
-    getPostTask = null;
+function* cancelGetPostSaga() {
+  try {
+    if (getPostTask) {
+      yield cancel(getPostTask);
+      getPostTask = null;
+    }
+  } catch (e) {
+    handleError(e);
   }
 }
 
@@ -46,7 +49,7 @@ function* sagas() {
     const GET_POST_REQUESTED = yield take("GET_POST_REQUESTED");
     getPostTask = yield fork(getPostSaga, GET_POST_REQUESTED);
 
-    yield takeLatest("CANCEL_GET_POST_REQUESTED", cancelSaga(getPostTask));
+    yield takeLatest("CANCEL_GET_POST_REQUESTED", cancelGetPostSaga);
   }
 }
 
